@@ -3,7 +3,7 @@
 
 ### How it works
 
-This is an app to create personal development challenges with your friends/community. The first example of such a challenge will be a book club. Together, witha. group of friends, we will read "Sapiens" by Yuval Noah Harari.
+This is an app to create personal development challenges with your friends/community. The first example of such a challenge will be a book club. Together, with a group of friends, we will read "Sapiens" by Yuval Noah Harari.
 
 To enter the book club challenge, each person will deposit some ETH. The challenge will last 10 weeks and each week there will be a Zoom call to discuss the previous week's reading (just like a traditional book club).
 
