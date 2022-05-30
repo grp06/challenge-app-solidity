@@ -4,31 +4,47 @@ pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
+function stringsAreEqual(string memory a, string memory b) view returns (bool) {
+    return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+}
+
 contract MeditationChallenge {
 
   address owner;
 
-  struct Challenge {
+  struct ChallengeStruct {
       string name;
-      uint256 numDays;
+      string description;
+      uint256 numWeeks;
+      bool started;
+      bool ended;
+      bool exists;
+      uint256[] participantAddresses;
   }
 
-  struct Participant {
-      address walletAddress;
+  mapping (string => ChallengeStruct) public challengeStructs;
+
+  string[] challengeIndex;
+
+  struct ParticipantStruct {
       string name;
-      uint256 lockedValue;
       uint256 originalDeposit;
-      string challengeName;
-      uint256 daysSuccessfullyCompleted;
   }
 
-  Participant[] public participants;
+  mapping (address => ParticipantStruct) participantStructs;
 
-  Challenge[] public challenges;
+  address[] participantIndex;
 
-  constructor(string memory name, uint256 numDays) {
+
+  constructor(string memory name, string memory description, uint256 numWeeks) {
       owner = msg.sender;
-      challenges.push(Challenge(name, numDays)); 
+      challengeStructs[name].description = description;
+      challengeStructs[name].numWeeks = numWeeks;
+      challengeStructs[name].started = false;
+      challengeStructs[name].ended = false;
+      challengeStructs[name].exists = true;
+      challengeStructs[name].participantAddresses;
+      challengeIndex.push(name);
   }
 
   function isOwner() public view returns (bool) {
@@ -38,43 +54,38 @@ contract MeditationChallenge {
       return false;
   }
 
-  function getChallenges() public view returns(Challenge[] memory) {
-      return challenges;
+  function getChallengeCount() public view returns (uint) {
+      return challengeIndex.length;
   }
 
-  function getParticipants() public view returns (Participant[] memory) {
-      return participants;
+  function getParticpantCount() public view returns (uint) {
+      return participantIndex.length;
   }
 
-  function depositEthToChallenge(string memory name, string memory challengeName) public payable {
-      participants.push(Participant(msg.sender, name, msg.value, msg.value, challengeName, 0));
+  function joinChallenge(string memory participantName, string memory challengeName) public payable {
+      // wouldn't need this is we could just check for existence of the struct.. not sure how to though.
+      require(challengeStructs[challengeName].exists, "challenge doesnt exist");
+      participantStructs[msg.sender].name = participantName;
+      participantStructs[msg.sender].originalDeposit = msg.value;
+      participantIndex.push(msg.sender);
+      challengeStructs[challengeName].participantAddresses.push(msg.sender);
   }
 
-  function getChallengeStats() public view returns (uint256, uint256) {
-      return (address(this).balance, participants.length);
+  function startChallenge(string memory name) public {
+      require(challengeStructs[name].exists, "challenge doesnt exist. Create it before starting");
+      challengeStructs[name].started = true;
   }
 
-  function payParticipant(address recipient) public payable {
-      // loop through participants
-      for (uint256 i = 0; i < participants.length; i++) {
-          address currentWalletAddress = participants[i].walletAddress;
-          if (recipient == currentWalletAddress) {
-              // pay recipient 1/10 of their original deposit
-              uint256 amountToSend = participants[i].lockedValue / 10;
-              participants[i].daysSuccessfullyCompleted++;
-              payable(currentWalletAddress).transfer(amountToSend);
-          }
-      }
+  function endChallenge(string memory name) public {
+      require(challengeStructs[name].exists, "challenge doesnt exist. Create it before ending the challenge");
+      challengeStructs[name].ended = true;
+  }  
+
+  function getParticipant(address participantAddress) public view returns (ParticipantStruct memory) {
+      return participantStructs[participantAddress];
   }
 
-  function getParticipant(address participantAddress) public view returns (Participant memory) {
-      Participant memory currentParticipant;
-      for (uint i = 0; i < participants.length; i++) {
-          // an example of wher ea mapping would be more well suited
-          if (participants[i].walletAddress == participantAddress) {
-              currentParticipant = participants[i];
-          }
-      }
-      return currentParticipant;
-  }
+  function getChallenge(string memory challengeName) public view returns (ChallengeStruct memory) {
+      
+  }  
 }
